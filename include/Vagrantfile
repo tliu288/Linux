@@ -1,0 +1,49 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# The MIT License (MIT)
+# 
+# Copyright (c) 2017 Kevin Brightwell and Daniel Bailey
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy 
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights 
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# This vagrantfile is used for creating a ubuntu xenial environment for 
+# building the procsim project
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "ubuntu/xenial64"
+
+  config.vm.provider "virtualbox" do |vb|  
+    vb.gui = true
+  end
+
+  if ENV.has_key?("WORKSPACE")
+    WORKSPACE = ENV["WORKSPACE"]
+    config.vm.provision "shell", run: "always", inline: "echo 'Linking workspace: ~/workspace -> #{WORKSPACE}'"
+    
+    config.vm.synced_folder ENV["WORKSPACE"], "/home/vagrant/workspace"
+  end
+
+  # Clean-up dead packages, no need to keep them
+  config.vm.provision "shell", privileged: true, inline: <<-EOF
+    echo "Cleaning unneeded packages"
+    apt-get autoremove --purge -y
+  EOF
+end # end vagrant file 
